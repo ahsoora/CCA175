@@ -1,0 +1,45 @@
+https://kr.cloudera.com/about/training/certification/cca-spark.html
+
+host 이름이 따로 있다.
+Data Ingest
+sqoop export/import 중 한 문제 나온다.
+- delimeter, format, compression 을 전부 연습해보자.
+- realtime, near-real-time 은 스트리밍 데이터 제공이 어려워 안나오는 경향.
+- default delimeter = ',' 
+Transform, Stage, and Store
+
+
+sqoop list-tables --connect jdbc:mysql://localhost/loudacre --username training --password training
+sqoop eval --connect jdbc:mysql://localhost/loudacre --username training --password training --query "show tables"
+sqoop eval --connect jdbc:mysql://localhost/loudacre --username training --password training --query "select * from accounts limit 5"
+sqoop import-all-tables --connect jdbc:mysql://localhost/loudacre --username training --password training
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --warehouse-dir /user/warehouse_dir_test
+sqoop eval --connect jdbc:mysql://localhost/loudacre --username training --password training --query "describe accounts"
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --target-dir /user/target_dir_test
+sqoop eval --connect jdbc:mysql://localhost/loudacre --username training --password training --query "describe accounts"
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --columns "city, state, zipcode" --target-dir /user/training/accounts_columns
+hdfs dfs -tail /user/training/accounts_columns/part-m-00000
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --where "state='CA'" --target-dir /user/training/accounts_where
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --fields-terminated-by "\t" --target-dir /user/training/accounts_field_terminated_by
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --as-parquetfile --compression-codec org.apache.hadoop.io.compress.SnappyCodec --target-dir /user/training/accounts_compress_snappy
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --as-avrodatafile --compression-codec org.apache.hadoop.io.compress.SnappyCodec --target-dir /user/training/accounts_compress_snappy_avro
+sqoop import --table accounts --connect jdbc:mysql://localhost/loudacre --username training --password training --as-parquetfile --compression-codec org.apache.hadoop.io.compress.GzipCodec --target-dir /user/training/accounts_compress_gzip
+
+*create table new_tbl like old_tbl;
+
+mysql> create table accounts_new like accounts;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from accounts_new limit 5;
+Empty set (0.00 sec)
+
+sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training --export-dir /user/training/accounts_where --table accounts_new --update-mode allowinsert
+sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training --export-dir /user/training/accounts --table accounts_new --update-mode allowinsert
+sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training --export-dir /user/training/accounts_where --table accounts_new2
+sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training --export-dir /user/training/accounts --table accounts_new --input-fields-terminated-by ","
+sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training --export-dir /user/training/accounts_field_terminated_by --table accounts_new2 --input-fields-terminated-by "\t" 
+
+hdfs path 문서의 절대 경로를 복사해서 써라.
+
+hdfs dfs -cat /user/training/accounts_compress_gzip/7eb3de61-0a28-4fa7-b5d9-e751932356f2.parquet | more
