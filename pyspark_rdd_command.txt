@@ -1,0 +1,143 @@
+RDD 50%
+spark sql 50%
+
+textFile
+saveAsTextFile
+input
+output
+
+transformation 하고 take 는 가끔 필요할 때만 (시간이 부족)
+
+pyspark
+sc
+myrdd = sc.textFile("file:$DEVDATA/frostroad.txt") 상대경로 쓰지말자
+myrdd.count()  
+myrdd=sc.textFile("file:/home/training/training_materials/data/frostroad.txt")
+myrdd.collect()  
+logfiles="/loudacre/weblogs/*"  
+logsRDD = sc.textFile(logfiles) 
+jpglogsRDD=logsRDD.filter(lambda line: ".jpg" in line)
+jpglogsRDD.take(10)  
+sc.textFile(logsfiles).filter(lambda line: ".jpg" in line).count()  
+logsRDD.map(lambda line: len(line)).take(5) 
+logsRDD.map(lambda line: line.split(' ')).take(5)  
+ipsRDD=logsRDD.map(lambda line: line.split(' ')[0])  
+for ip in ipsRDD.take(10): print ip  
+ipsRDD.saveAsTextFile("/loudacre/iplist")   
+
+usersRDD = logsRDD.map(lambda line: line.split(' ')).map(lambda fields: [fields[0]+"/"+fields[2]])
+ipusersRDD.saveAsTextFile("/loudacre/ipusers")
+
+
+궁금한 것 
+1./loudacre 와 /loudacre/ 차이
+2.RDD 앞에 'u' 의 의미
+
+xmlfiles="/loudacre/activations/*" 
+xmlsRDD = sc.textFile(xmlfiles)  
+actnumRDD=xmlsRDD.filter(lambda line:"<account-number>" in line)   
+numRDD=actnumRDD.map(lambda line: line.split('>')
+numRDD=actnumRDD.map(lambda line: line.split('>')[1]).map(lambda fields: fields.split('<')[0])
+modelfilterRDD=xmlsRDD.filter(lambda line:"<model>" in line)  
+modelRDD=modelfilterRDD.map(lambda line: line.split('>')[1]).map(lambda fields: fields.split('<')[0])
+
+numModelRDD=
+
+spark-etl
+# Stub code to copy into Spark Shell
+
+import xml.etree.ElementTree as ElementTree
+
+# Optional: Set logging level to WARN to reduce distracting info messages
+sc.setLogLevel("WARN")
+
+# Given a string containing XML, parse the string, and 
+# return an iterator of activation XML records (Elements) contained in the string
+
+def getActivations(s):
+    filetree = ElementTree.fromstring(s)
+    return filetree.getiterator('activation')
+=> input:string, output:collection
+
+# Given an activation record (XML Element), return the model name
+def getModel(activation):
+    return activation.find('model').text
+
+# Given an activation record (XML Element), return the account number 
+def getAccount(activation):
+    return activation.find('account-number').text
+
+# Exercise solution
+# Read XML files into an RDD 
+files="/loudacre/activations"
+activationFiles = sc.wholeTextFiles(files)
+#count 66
+=> result:pair, (key:파일이름 위치정보, value:내용)
+
+# Parse each file (as a string) into a collection of activation XML records
+activationRecords = activationFiles.flatMap(lambda (filename,xmlstring): getActivations(xmlstring))
+=> flatmap 으로 activation 별로 row 나뉨
+
+# Map each activation record to "account-number:model-name"
+models = activationRecords.map(lambda record: getAccount(record) + ":" + getModel(record))
+
+# Save the data to a file
+models.saveAsTextFile("/loudacre/account-models")
+
+
+xmlfiles="/loudacre/activations/*" 
+xmlsRDD = sc.textFile(xmlfiles)  
+#count 1168716
+
+spark-pair
+# Set the log level to WARN to reduce distracting INFO messages
+sc.setLogLevel("WARN")
+
+# Step 1 - Create an RDD based on a subset of weblogs (those ending in digit 2)
+logs=sc.textFile("/loudacre/weblogs/*2.log")
+# map each request (line) to a pair (userid, 1), then sum the values
+userreqs = logs \
+   .map(lambda line: line.split()) \
+   .map(lambda words: (words[2],1))  \
+   .reduceByKey(lambda count1,count2: count1 + count2)
+=>  split() 인자없으면 ' ' whitespace
+=>userreqs=logs.map(lambda line: line.split()).map(lambda words: (words[2],1)).reduceByKey(lambda v1,v2:v1+v2)
+
+# Step 2 - Show the count frequencies
+freqcount = userreqs.map(lambda (userid,freq): (freq,userid)).countByKey()
+print freqcount
+=> result 접속수:유저수
+
+# Step 3 - Group IPs by user ID
+userips = logs \
+   .map(lambda line: line.split()) \
+   .map(lambda words: (words[2],words[0])) \
+   .groupByKey()
+# print out the first 10 user ids, and their IP list
+for (userid,ips) in userips.take(10):
+   print userid, ":"
+   for ip in ips: print "\t",ip
+=> In [97]: userips.take(3)
+Out[97]: 
+[(u'35191', <pyspark.resultiterable.ResultIterable at 0x7f8473f9ff90>),
+ (u'3922', <pyspark.resultiterable.ResultIterable at 0x7f8473f9fe10>),
+ (u'108991', <pyspark.resultiterable.ResultIterable at 0x7f8473f9fe90>)]
+=> userips.map(lambda (k,v): (k, list(v))).take(5)
+=> iterable 의 경우 데이터를 볼 수 있게 위처럼 리스트를 만듬
+=> result - userid,ip
+
+# Step 4a - Map account data to (userid,[values....])
+#accountsdata = "/loudacre/accounts"
+accountsdata = "/user/training/accounts"
+accounts = sc.textFile(accountsdata) \
+   .map(lambda s: s.split(',')) \
+   .map(lambda account: (account[0],account))
+
+# Step 4b - Join account data with userreqs then merge hit count into valuelist   
+accounthits = accounts.join(userreqs)
+
+# Step 4c - Display userid, hit count, first name, last name for the first 5 elements
+for (userid,(values,count)) in accounthits.take(5) :
+    print  userid, count, values[3],values[4]
+
+terminal - ctrl+shift+c
