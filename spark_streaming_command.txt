@@ -1,0 +1,26 @@
+pyspark executor 를 올려놓기 실행
+2개 세션을 띄워놓고 할까
+pyspark --num-executors 5 --driver-memory 2g --executor-memory 2g
+=>pyspark2 --executor-memory 2g
+
+Spark Streaming
+socket 을 연결
+코어를 2개 이상 띄워야 한다
+start 해줘야 한다.
+ssc.start()
+ssc.awaitTermination()
+을 마지막을 써주고 이후는 코드가 실행되지 않는다.
+transform(rdd=>rdd.distinct()) => rdd 의 모든 함수를 쓸 수 있다.
+foreachDD()
+str(count) 캐스팅 해줘야 하는 부분이 시험때 놓치기 쉽다
+linear
+datastream
+RDD[0]->transtforamtion RDD[1]->RDD[2]
+state 
+Request-total Request(state)(insertOrUpdate) -> updateStateByKey(lambda newCounts, state:
+ssc.checkpoint()
+lineages? 를 hdfs에 저장해 놓는다
+
+
+terminal 
+copy&paste-ctrl+shift+c/v

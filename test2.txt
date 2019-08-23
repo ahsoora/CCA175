@@ -1,0 +1,33 @@
+test2
+
+tip- key 가 없을때 -m1
+
+problem1
+sqoop import
+
+$ sqoop import --connect jdbc:mysql://localhost/db --username foo --table TEST
+
+sqoop import --connect jdbc:mysql://localhost/loudacre --username training --password training \
+--table accounts \
+--target-dir /user/cert/problem1/solution/  \
+--delete-target-dir \
+--as-textfile \
+--fields-terminated-by ',' \
+--columns "acct_num,first_name,last_name" 
+
+problem2
+sqoop export
+mysql solution table
+$ sqoop export --connect jdbc:mysql://db.example.com/foo --table bar  \
+    --export-dir /results/bar_data
+
+sqoop export --connect jdbc:mysql://localhost/loudacre --username training --password training \
+--table accounts_test2 \
+--export-dir /user/training/accounts_compress_snappy/
+
+problem3
+read parquet file gzip in hive
+where
+
+
+

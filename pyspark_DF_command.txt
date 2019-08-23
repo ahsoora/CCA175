@@ -1,0 +1,29 @@
+DataFrame
+
+spark2.3 에서 CSV 읽을 때 schema, header, delimiter 옵션을 준다
+.format 대신 .csv 를 줄 수 있는데 옵션을 앞에주고 마지막에 넣어야 함
+(.csv는 .load 를 포함하고 있다.)
+
+parquet 은 binary 파일이라 읽기 위해서는 툴이 필요
+parquet-tools schema mydata.parquet / hdfs://gateway/loudacre/test.parquet
+https://stackoverflow.com/questions/53307609/using-parquet-tools-on-files-in-hdfs
+
+metastoretable = hivetable
+
+write.save / read.load 가 짝궁
+
+write mode : error, overwrite, append, ignore
+
+StructType([
+	StructField(" ", ),StructField(" ", )
+])
+
+myDF=spark.read.json("file")
+	.select(myDF.name,"last_name") -> error 흔히 하는 실수
+->
+myDF=spark.read.json("file")
+solDF=myDF.select(myDF.name,"last_name") -> ok
+
+시험에서 CSV 를 줄때가 많은데 출제의도는
+header 가 있으면 DF, 없으면 RDD -> 인데 DF로 쓰는 방법을 알아보자
+

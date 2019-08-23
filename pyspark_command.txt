@@ -6,7 +6,7 @@ saveAsTextFile
 input
 output
 
-transformation 하고 take 는 가끔 필요할 때만 (시간이 부족)pripr
+transformation 하고 take 는 가끔 필요할 때만 (시간이 부족)
 
 pyspark
 sc
@@ -101,12 +101,11 @@ userreqs = logs \
    .map(lambda words: (words[2],1))  \
    .reduceByKey(lambda count1,count2: count1 + count2)
 =>  split() 인자없으면 ' ' whitespace
-=>userreqs=logs.map(lambda line: line.split()).map(lambda words: (words[2],1)).reduceByKey(lambda v1,v2:v1+v2)
+userreqs=logs.map(lambda line: line.split()).map(lambda words: (words[2],1)).reduceByKey(lambda v1,v2:v1+v2)
 
 # Step 2 - Show the count frequencies
 freqcount = userreqs.map(lambda (userid,freq): (freq,userid)).countByKey()
 print freqcount
-=> result 접속수:유저수
 
 # Step 3 - Group IPs by user ID
 userips = logs \
@@ -117,18 +116,9 @@ userips = logs \
 for (userid,ips) in userips.take(10):
    print userid, ":"
    for ip in ips: print "\t",ip
-=> In [97]: userips.take(3)
-Out[97]: 
-[(u'35191', <pyspark.resultiterable.ResultIterable at 0x7f8473f9ff90>),
- (u'3922', <pyspark.resultiterable.ResultIterable at 0x7f8473f9fe10>),
- (u'108991', <pyspark.resultiterable.ResultIterable at 0x7f8473f9fe90>)]
-=> userips.map(lambda (k,v): (k, list(v))).take(5)
-=> iterable 의 경우 데이터를 볼 수 있게 위처럼 리스트를 만듬
-=> result - userid,ip
 
 # Step 4a - Map account data to (userid,[values....])
-#accountsdata = "/loudacre/accounts"
-accountsdata = "/user/training/accounts"
+accountsdata = "/loudacre/accounts"
 accounts = sc.textFile(accountsdata) \
    .map(lambda s: s.split(',')) \
    .map(lambda account: (account[0],account))
@@ -140,4 +130,3 @@ accounthits = accounts.join(userreqs)
 for (userid,(values,count)) in accounthits.take(5) :
     print  userid, count, values[3],values[4]
 
-terminal - ctrl+shift+c
